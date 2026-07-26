@@ -1,4 +1,4 @@
-# hibou-sample-project
+# hibou sample project
 
 A small **polyglot fixture** for iterating on [Hibou](https://github.com/hibouhq/hibou)
 CI ingestion (coverage, JUnit, SBOMs, SARIF, snapshots) without paying the cost of
