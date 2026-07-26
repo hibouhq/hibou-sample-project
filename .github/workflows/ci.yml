@@ -51,7 +51,7 @@ jobs:
         with:
           workspaces: rust
       - uses: taiki-e/install-action@cargo-llvm-cov
-      - uses: aquasecurity/setup-trivy@v0.2.3
+      - uses: aquasecurity/setup-trivy@v0.3.1
         with:
           version: v0.58.1
 
@@ -130,10 +130,13 @@ jobs:
             echo "::notice::Hibou upload skipped — set repo variable HIBOU_SERVER_URL (https://) and secret HIBOU_API_TOKEN to enable."
           fi
 
+      # Published TypeScript action (public repo → usable from any repo).
+      # Downloads a version-matched CLI from `server` (the Hibou instance,
+      # e.g. https://hibouhq.com) and uploads coverage/SBOM/SARIF there.
       - name: Upload snapshot to Hibou
         if: steps.hibou.outputs.enabled == 'true'
         continue-on-error: true
-        uses: hibouhq/hibou/.github/actions/hibou-upload@main
+        uses: hibouhq/hibou-upload-action@v0.1
         with:
           complete: 'true'
           server: ${{ vars.HIBOU_SERVER_URL }}
