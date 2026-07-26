@@ -14,10 +14,13 @@ matching, secret scanning) has real findings to work with.
 | Language | Package | Version | Advisory |
 |----------|---------|---------|----------|
 | Go | `github.com/dgrijalva/jwt-go` | v3.2.0 | CVE-2020-26160 (unmaintained; auth bypass) |
-| Go | `gopkg.in/yaml.v2` | v2.2.2 | CVE-2019-11253 (billion laughs / DoS) |
-| TypeScript | `lodash` | 4.17.11 | CVE-2019-10744 (prototype pollution) |
 | Java | `org.apache.logging.log4j:log4j-core` | 2.14.1 | CVE-2021-44228 (Log4Shell) |
 | Rust | `time` | 0.1.45 | RUSTSEC-2020-0071 (segfault) |
+
+Two fixtures were remediated to exercise the "vulnerability resolved" path:
+`gopkg.in/yaml.v2` v2.2.2 → v2.4.0 (CVE-2019-11253) and `lodash` 4.17.11 →
+4.17.21 (CVE-2019-10744). Both are still imported, so the dependency stays in
+the SBOM at a non-vulnerable version rather than disappearing from it.
 
 ## SAST findings (gosec / semgrep / trivy / clippy)
 

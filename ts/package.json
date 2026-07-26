@@ -8,7 +8,7 @@
     "coverage": "vitest run --coverage --reporter=default --reporter=junit --outputFile=junit-front.xml"
   },
   "dependencies": {
-    "lodash": "4.17.11"
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",
