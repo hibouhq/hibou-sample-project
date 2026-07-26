@@ -23,8 +23,7 @@ func Divide(a, b int) (int, error) {
 	return a / b, nil
 }
 
-// Classify labels n as "negative", "zero", or "positive". The "negative" branch
-// is intentionally left uncovered by tests so the fixture reports < 100% coverage.
+// Classify labels n as "negative", "zero", or "positive".
 func Classify(n int) string {
 	switch {
 	case n < 0:

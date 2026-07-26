@@ -11,6 +11,6 @@ describe('calc', () => {
   it('classifies', () => {
     expect(classify(0)).toBe('zero')
     expect(classify(5)).toBe('positive')
-    // classify(negative) intentionally untested → keeps coverage < 100%.
+    expect(classify(-5)).toBe('negative')
   })
 })
