@@ -1,0 +1,25 @@
+# Go
+go/coverage.out
+go/junit-go.xml
+go/app
+
+# Node / TS
+ts/node_modules/
+ts/coverage/
+ts/junit-front.xml
+ts/*.tsbuildinfo
+
+# Java
+java/target/
+
+# Rust
+rust/target/
+rust/lcov.info
+
+# Security artifacts
+*.sarif
+*.cdx.json
+sbom-*.json
+
+# OS
+.DS_Store

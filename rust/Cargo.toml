@@ -1,0 +1,12 @@
+[package]
+name = "hibou_sample_rust"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[dependencies]
+# INTENTIONALLY vulnerable: time 0.1.45 is RUSTSEC-2020-0071 (potential segfault).
+time = "=0.1.45"
+
+[lib]
+path = "src/lib.rs"

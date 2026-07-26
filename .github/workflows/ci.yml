@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    # Persist a snapshot for the release ref. NOTE: this workflow intentionally
+    # attaches NO binaries to the GitHub release — it only uploads a Hibou
+    # snapshot, so we can POC snapshot persistence across a release ref cheaply.
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ────────────────────────────────────────────────────────────────
+      # Phase 1 — toolchains (SEQUENTIAL on purpose).
+      # setup-* actions append to $GITHUB_PATH / $GITHUB_ENV; running them in
+      # parallel steps would race on those files. Keep every env mutation here,
+      # so the parallel phases below are pure `run` steps with no env writes.
+      # ────────────────────────────────────────────────────────────────
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: aquasecurity/setup-trivy@v0.2.3
+        with:
+          version: v0.58.1
+
+      # ────────────────────────────────────────────────────────────────
+      # Phase 2 — build + test + coverage, in PARALLEL.
+      # Each branch touches only its own language subdir and a disjoint tool
+      # cache (~/go/bin, ~/.m2, ~/.cargo), so there are no cross-branch writes.
+      # The trivy-DB warm shares nothing with the builds (writes ~/.cache/trivy)
+      # and overlaps trivy's slow DB download with compilation.
+      # ────────────────────────────────────────────────────────────────
+      - parallel:
+          - name: Go — test + coverage + gosec
+            run: |
+              export PATH="$(go env GOPATH)/bin:$PATH"
+              cd go
+              go install gotest.tools/gotestsum@latest
+              gotestsum --junitfile junit-go.xml --format pkgname -- -coverprofile=coverage.out ./...
+              go tool cover -func=coverage.out | tail -1
+              go install github.com/securego/gosec/v2/cmd/gosec@latest
+              gosec -fmt sarif -out ../gosec.sarif ./... || true
+
+          - name: TypeScript — test + coverage
+            run: |
+              cd ts
+              npm ci
+              npm run coverage
+
+          - name: Java — test + coverage
+            run: |
+              cd java
+              mvn -q -B verify
+
+          - name: Rust — test + coverage
+            run: |
+              cd rust
+              cargo llvm-cov --lcov --output-path lcov.info
+
+          - name: Trivy — warm vulnerability DB
+            run: trivy fs --download-db-only
+
+      # ────────────────────────────────────────────────────────────────
+      # Phase 3 — SBOM + SARIF, in PARALLEL.
+      # Safe now: Phase 2 completed (tree is stable, rust/Cargo.lock exists) and
+      # the DB is warm. Each branch writes a DISTINCT output file, so concurrent
+      # trivy invocations (read-only over the tree) never collide.
+      # ────────────────────────────────────────────────────────────────
+      - parallel:
+          - name: SBOM — Go
+            run: trivy fs --format cyclonedx --output go-sbom.cdx.json go/
+          - name: SBOM — TypeScript
+            run: trivy fs --format cyclonedx --output ts-sbom.cdx.json ts/
+          - name: SBOM — Java
+            run: trivy fs --format cyclonedx --output java-sbom.cdx.json java/
+          - name: SBOM — Rust
+            run: trivy fs --format cyclonedx --output rust-sbom.cdx.json rust/
+          - name: Vuln + secret SARIF (repo)
+            run: |
+              trivy fs --format sarif --output trivy-fs.sarif \
+                --skip-dirs ts/node_modules --skip-dirs java/target --skip-dirs rust/target .
+
+      # ────────────────────────────────────────────────────────────────
+      # Phase 4 — Hibou upload (SERIAL barrier: needs every artifact above).
+      # Uploads coverage + JUnit + SBOM + SARIF as one snapshot for this
+      # (repo, ref, sha). On `release` this persists the release-ref snapshot.
+      # ────────────────────────────────────────────────────────────────
+      - name: Check Hibou upload config
+        id: hibou
+        env:
+          HIBOU_SERVER_URL: ${{ vars.HIBOU_SERVER_URL }}
+          HIBOU_API_TOKEN: ${{ secrets.HIBOU_API_TOKEN }}
+        run: |
+          if [[ -n "$HIBOU_API_TOKEN" && "$HIBOU_SERVER_URL" =~ ^https?://[^[:space:]]+ && "$HIBOU_SERVER_URL" != *your-hibou-domain* ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Hibou upload skipped — set repo variable HIBOU_SERVER_URL (https://) and secret HIBOU_API_TOKEN to enable."
+          fi
+
+      - name: Upload snapshot to Hibou
+        if: steps.hibou.outputs.enabled == 'true'
+        continue-on-error: true
+        uses: hibouhq/hibou/.github/actions/hibou-upload@main
+        with:
+          complete: 'true'
+          server: ${{ vars.HIBOU_SERVER_URL }}
+          token: ${{ secrets.HIBOU_API_TOKEN }}
+          file: |
+            go/coverage.out
+            go/junit-go.xml
+            ts/coverage/lcov.info
+            ts/junit-front.xml
+            java/target/site/jacoco/jacoco.xml
+            rust/lcov.info
+            gosec.sarif
+            trivy-fs.sarif
+            go-sbom.cdx.json
+            ts-sbom.cdx.json
+            java-sbom.cdx.json
+            rust-sbom.cdx.json
+
+      - name: Upload reports artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            go/coverage.out
+            go/junit-go.xml
+            ts/coverage/lcov.info
+            ts/junit-front.xml
+            java/target/site/jacoco/jacoco.xml
+            java/target/surefire-reports/*.xml
+            rust/lcov.info
+            *.sarif
+            *-sbom.cdx.json
+          if-no-files-found: warn
