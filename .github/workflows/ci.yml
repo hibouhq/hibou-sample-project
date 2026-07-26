@@ -145,12 +145,8 @@ jobs:
             ts/junit-front.xml
             java/target/site/jacoco/jacoco.xml
             rust/lcov.info
-            gosec.sarif
-            trivy-fs.sarif
-            go-sbom.cdx.json
-            ts-sbom.cdx.json
-            java-sbom.cdx.json
-            rust-sbom.cdx.json
+            *.sarif
+            *.cdx.json
 
       - name: Upload reports artifact
         if: always()
