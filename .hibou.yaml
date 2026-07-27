@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://hibou.dev/schemas/v1/hibou-config.schema.json
+version: 1
+
+# Demo thresholds: a PR shipping untested code (0% patch coverage) must block,
+# a fully tested one must pass. The insecure.* fixtures keep weakness gates
+# advisory — blocking on them would block every PR.
+quality_gates:
+  - branches: ["main"]
+    enforcement: blocking
+    weaknesses:
+      max_critical: 10
+      max_high: 20
+    coverage:
+      min_coverage: 20
+      grace: 2
+      diff_minimum: 80
