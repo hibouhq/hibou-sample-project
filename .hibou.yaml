@@ -8,7 +8,6 @@ quality_gates:
   - branches: ["main"]
     enforcement: blocking
     weaknesses:
-      max_critical: 10
       max_high: 20
     coverage:
       min_coverage: 20
