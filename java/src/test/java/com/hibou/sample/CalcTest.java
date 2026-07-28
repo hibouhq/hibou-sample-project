@@ -8,6 +8,26 @@ import org.junit.jupiter.api.Test;
 class CalcTest {
 
     @Test
+    void clampsInRangeAndBelow() {
+        // Deliberately no above-range case: "n > hi" never goes true, leaving
+        // the compound condition partially covered.
+        assertEquals(5, Calc.clamp(5, 0, 10));
+        assertEquals(0, Calc.clamp(-3, 0, 10));
+    }
+
+    @Test
+    void rejectsNonPositivePort() {
+        // Only the first condition's false outcome is exercised; the rest of
+        // the chain stays partially covered.
+        assertEquals(false, Calc.isValidPort(0, false));
+    }
+
+    @Test
+    void gradesAnA() {
+        assertEquals("A", Calc.grade(95));
+    }
+
+    @Test
     void adds() {
         assertEquals(5, Calc.add(2, 3));
     }

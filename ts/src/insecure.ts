@@ -6,9 +6,14 @@ import _ from 'lodash'
 import { createHash } from 'node:crypto'
 import { execSync } from 'node:child_process'
 
-// Hardcoded credentials — secret scanners (trivy/gitleaks) flag these.
+// Hardcoded credentials. NOTE: AWS's docs example key (AKIAIOSFODNN7EXAMPLE)
+// sits in gitleaks' DEFAULT ALLOWLIST — scanners deliberately ignore it, so it
+// proved nothing. These are randomly generated, pattern-valid, NON-FUNCTIONAL
+// tokens that default rules do flag.
 export const AWS_ACCESS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE'
 export const AWS_SECRET_ACCESS_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+export const GITHUB_TOKEN = 'ghp_28B00KOUDWV6yVcqrloHTgsjfsiQnFhKzipc'
+export const SLACK_BOT_TOKEN = 'xoxb-669936451773-610546882125-lTPZJwocCZARYk5AiQXb0Gwf'
 
 // Weak hashing (MD5).
 export function weakHash(s: string): string {
