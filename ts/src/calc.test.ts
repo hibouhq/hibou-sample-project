@@ -2,10 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { add, sub, mul, divide, classify, clamp, isValidPort, withUnit, grade } from './calc'
 
 describe('calc', () => {
-  // Deliberately no above-range case: "n > hi" never goes true, leaving the
-  // compound condition partially covered.
-  it('clamps in range and below', () => {
-    expect(clamp(5, 0, 10)).toBe(5)
+  // Deliberately use only the below-range case: `n < lo` short-circuits, so
+  // the `n > hi` branch remains unvisited on this executed source line.
+  it('clamps below range', () => {
     expect(clamp(-3, 0, 10)).toBe(0)
   })
 
