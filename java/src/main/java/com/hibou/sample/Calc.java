@@ -10,10 +10,6 @@ public final class Calc {
         return a + b;
     }
 
-    public static int sub(int a, int b) {
-        return a - b;
-    }
-
     public static int mul(int a, int b) {
         return a * b;
     }
@@ -63,6 +59,35 @@ public final class Calc {
         if (n == 0) {
             return "zero";
         }
+        if (n == 1) {
+            return "one";
+        }
         return "positive";
+    }
+
+    /** New in this PR, covered by a test — renders as "new covered". */
+    public static int pow(int base, int exp) {
+        int result = 1;
+        for (int i = 0; i < exp; i++) {
+            result *= base;
+        }
+        return result;
+    }
+
+    /** New in this PR and INTENTIONALLY untested — renders as "new uncovered". */
+    public static boolean isEven(int n) {
+        return n % 2 == 0;
+    }
+
+    /**
+     * New in this PR — textbook PARTIAL coverage: tests only pass n == 0, so the
+     * first operand is always true and `n == 999` is NEVER reached (the ||
+     * short-circuits). The line runs but the second branch outcome is missing.
+     */
+    public static boolean isSentinel(int n) {
+        if (n == 0 || n == 999) {
+            return true;
+        }
+        return false;
     }
 }

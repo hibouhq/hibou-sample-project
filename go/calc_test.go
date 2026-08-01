@@ -8,18 +8,6 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestSub(t *testing.T) {
-	if Sub(5, 3) != 2 {
-		t.Fatalf("Sub(5,3) = %d, want 2", Sub(5, 3))
-	}
-}
-
-func TestMul(t *testing.T) {
-	if Mul(4, 3) != 12 {
-		t.Fatalf("Mul(4,3) = %d, want 12", Mul(4, 3))
-	}
-}
-
 func TestDivide(t *testing.T) {
 	q, err := Divide(10, 2)
 	if err != nil || q != 5 {
@@ -40,7 +28,28 @@ func TestClassify(t *testing.T) {
 	if got := Classify(5); got != "positive" {
 		t.Fatalf("Classify(5) = %q, want positive", got)
 	}
-	// Classify(negative) is intentionally NOT tested → keeps coverage < 100%.
+	// Newly covered in this PR: the negative branch was uncovered on main, so it
+	// renders as "gained coverage" in the comparison.
+	if got := Classify(-5); got != "negative" {
+		t.Fatalf("Classify(-5) = %q, want negative", got)
+	}
+	// Covers the new "one" case added in this PR — "new covered".
+	if got := Classify(1); got != "one" {
+		t.Fatalf("Classify(1) = %q, want one", got)
+	}
+}
+
+func TestPow(t *testing.T) {
+	if Pow(2, 10) != 1024 {
+		t.Fatalf("Pow(2,10) = %d, want 1024", Pow(2, 10))
+	}
+}
+
+func TestIsSentinel(t *testing.T) {
+	// Only n == 0 is passed, so `n == 999` is never reached in `if n == 0 || n == 999`.
+	if !IsSentinel(0) {
+		t.Fatal("IsSentinel(0) = false, want true")
+	}
 }
 
 func TestWeakHash(t *testing.T) {
