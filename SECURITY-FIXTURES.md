@@ -30,6 +30,16 @@ Present in every `insecure.*` module:
 - **Code injection** (TS only) — `eval()` of caller-supplied string.
 - **Vulnerable-dep usage** — the CVE deps above are actually called.
 
+Go additionally has `insecure_net.go`, a second batch kept in its own file so a
+change can introduce *new* rule IDs rather than only shifting counts:
+
+| Rule | Pattern |
+|------|---------|
+| G402 | `tls.Config{InsecureSkipVerify: true}` — no certificate validation |
+| G107 | `http.Get` on a caller-supplied URL — SSRF taint |
+| G304 | `os.ReadFile` on an uncontained path — traversal |
+| G401 / G505 | SHA-1 digest — broken primitive |
+
 ## What is NOT a finding
 
 - The `calc` libraries are clean.
