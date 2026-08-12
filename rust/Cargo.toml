@@ -6,7 +6,13 @@ publish = false
 
 [dependencies]
 # INTENTIONALLY vulnerable: time 0.1.45 is RUSTSEC-2020-0071 (potential segfault).
+# REFERENCED from source — the crate-level reachability fixture's "reachable" half.
 time = "=0.1.45"
+# INTENTIONALLY vulnerable AND NEVER referenced from source: arrayvec 0.4.10
+# is RUSTSEC-2019-0011 (memory corruption). Present in the lockfile/SBOM (the
+# CVE matches) but no source file names it — the "not reachable" half of the
+# crate-level reachability fixture. Do not `use` it.
+arrayvec = "=0.4.10"
 
 [lib]
 path = "src/lib.rs"

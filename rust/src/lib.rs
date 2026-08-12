@@ -1,6 +1,7 @@
 //! Tiny arithmetic library, mirrored across every language in this fixture.
 
 pub mod insecure;
+pub mod reachability;
 
 /// Returns a + b.
 pub fn add(a: i64, b: i64) -> i64 {

@@ -71,7 +71,10 @@ jobs:
               gotestsum --junitfile junit-go.xml --format pkgname -- -coverprofile=coverage.out ./...
               go tool cover -func=coverage.out | tail -1
               go install github.com/securego/gosec/v2/cmd/gosec@latest
-              gosec -fmt sarif -out ../gosec.sarif ./... || true
+              gosec -track-suppressions -fmt sarif -out ../gosec.sarif ./... || true
+              # Call-graph reachability data for the Hibou step below
+              # (see go/reachability.go for the reachable/unreachable pair).
+              go install golang.org/x/vuln/cmd/govulncheck@latest
 
           - name: TypeScript — test + coverage
             run: |
@@ -150,6 +153,14 @@ jobs:
             rust/lcov.info
             *.sarif
             *.cdx.json
+          # Runs after the upload inside this same step: reachability verdicts
+          # attach to the snapshot the upload just created. Unreachable CVEs
+          # stop blocking the gate when the org enables it. Precision per
+          # language: go = symbol-level (govulncheck), java = class-level
+          # (bytecode references), rust = crate-level (source references).
+          # Fixture pairs: go/reachability.go, java/…/Reachability.java,
+          # rust/src/reachability.rs.
+          reachability: 'go:go,java:java/target/classes,rust:rust'
 
       - name: Upload reports artifact
         if: always()
