@@ -9,6 +9,17 @@ quality_gates:
     enforcement: blocking
     weaknesses:
       max_high: 20
+    licenses:
+      deny_categories: ["copyleft", "network-copyleft", "source-available"]
+      # OS packages dominate this project's component count (the fixture images
+      # ship GPL base packages: busybox, apk-tools, tar, util-linux) and a distro
+      # package the app runs on top of is not a linked dependency of its code.
+      exempt_purls: ["pkg:apk/*", "pkg:deb/*"]
+      # Departs from the fail-closed default on purpose: Trivy emits no license
+      # for the reactor pom, for check.v1 (a test-only transitive of yaml.v2), or
+      # for jars and Go binaries found inside an image. Failing a demo on the SBOM
+      # generator's blind spots teaches nothing about license risk.
+      deny_unknown: false
     coverage:
       min_coverage: 20
       grace: 2

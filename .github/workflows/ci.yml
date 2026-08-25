@@ -112,14 +112,17 @@ jobs:
               trivy fs --format sarif --output trivy-fs.sarif \
                 --skip-dirs ts/node_modules --skip-dirs java/target --skip-dirs rust/target .
 
-          # Build the three intentionally-vulnerable OS images and emit one
-          # CycloneDX SBOM per image. The SBOMs carry the OS packages with their
+          # Build the intentionally-vulnerable fixture images and emit one
+          # CycloneDX SBOM per image. The OS SBOMs carry packages with their
           # purl distro qualifiers (pkg:apk/...?distro=alpine-3.9, deb, rpm), so
           # Hibou can match apk/deb/rpm advisories release-scoped and reconcile
-          # OSV + Trivy sources. See ../SECURITY-FIXTURES.md.
+          # OSV + Trivy sources. The tomcat SBOM instead carries application
+          # jars as pkg:maven/org.apache.tomcat/* — the only path by which
+          # software installed *into* an image (not declared as a dependency)
+          # reaches Hibou. See ../SECURITY-FIXTURES.md.
           - name: OS image SBOMs
             run: |
-              for os in alpine debian rhel; do
+              for os in alpine debian rhel tomcat; do
                 docker build -t "hibou-fixture-$os" "images/$os"
                 trivy image --format cyclonedx \
                   --output "$os-image-sbom.cdx.json" "hibou-fixture-$os"
