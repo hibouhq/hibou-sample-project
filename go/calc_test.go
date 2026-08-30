@@ -40,7 +40,9 @@ func TestClassify(t *testing.T) {
 	if got := Classify(5); got != "positive" {
 		t.Fatalf("Classify(5) = %q, want positive", got)
 	}
-	// Classify(negative) is intentionally NOT tested → keeps coverage < 100%.
+	if got := Classify(-5); got != "negative" {
+		t.Fatalf("Classify(-5) = %q, want negative", got)
+	}
 }
 
 func TestWeakHash(t *testing.T) {
