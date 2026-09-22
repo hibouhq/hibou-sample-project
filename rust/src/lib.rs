@@ -7,11 +7,6 @@ pub fn add(a: i64, b: i64) -> i64 {
     a + b
 }
 
-/// Returns a - b.
-pub fn sub(a: i64, b: i64) -> i64 {
-    a - b
-}
-
 /// Returns a * b.
 pub fn mul(a: i64, b: i64) -> i64 {
     a * b
@@ -33,9 +28,36 @@ pub fn classify(n: i64) -> &'static str {
         "negative"
     } else if n == 0 {
         "zero"
+    } else if n == 1 {
+        "one"
     } else {
         "positive"
     }
+}
+
+/// New in this PR, covered by a test — renders as "new covered".
+pub fn pow(base: i64, exp: u32) -> i64 {
+    let mut result = 1;
+    for _ in 0..exp {
+        result *= base;
+    }
+    result
+}
+
+/// New in this PR and INTENTIONALLY untested — renders as "new uncovered".
+pub fn is_even(n: i64) -> bool {
+    n % 2 == 0
+}
+
+/// Reports whether n is a sentinel value. The test only ever passes 0, so
+/// `n == 0` is always true and `|| n == 999` is NEVER reached. NOTE: llvm-cov
+/// here is line-level, so this renders as covered — its TS and Java twins show
+/// the same line as PARTIAL.
+pub fn is_sentinel(n: i64) -> bool {
+    if n == 0 || n == 999 {
+        return true;
+    }
+    false
 }
 
 #[cfg(test)]
@@ -45,16 +67,6 @@ mod tests {
     #[test]
     fn adds() {
         assert_eq!(add(2, 3), 5);
-    }
-
-    #[test]
-    fn subtracts() {
-        assert_eq!(sub(5, 3), 2);
-    }
-
-    #[test]
-    fn multiplies() {
-        assert_eq!(mul(4, 3), 12);
     }
 
     #[test]
@@ -71,6 +83,21 @@ mod tests {
     fn classifies() {
         assert_eq!(classify(0), "zero");
         assert_eq!(classify(5), "positive");
-        // classify(negative) intentionally untested → keeps coverage < 100%.
+        // Newly covered in this PR: the negative branch was uncovered on main,
+        // so it renders as "gained coverage" in the comparison.
+        assert_eq!(classify(-5), "negative");
+        // Covers the new "one" case added in this PR — "new covered".
+        assert_eq!(classify(1), "one");
+    }
+
+    #[test]
+    fn raises_to_power() {
+        assert_eq!(pow(2, 10), 1024);
+    }
+
+    #[test]
+    fn detects_zero_sentinel() {
+        // Only 0 is passed, so `n == 999` is never reached in `n == 0 || n == 999`.
+        assert!(is_sentinel(0));
     }
 }

@@ -59,3 +59,13 @@ export function withUnit(value: number, unit?: string): string {
 export function grade(score: number): string {
   return score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 50 ? 'C' : 'F'
 }
+
+// New in this PR — TEXTBOOK partial coverage: the test only ever passes n === 0,
+// so the first operand is always true and `n === 999` is NEVER reached (the || short-
+// circuits). The line runs (covered) but one branch outcome is missing → partial.
+export function isSentinel(n: number): boolean {
+  if (n === 0 || n === 999) {
+    return true
+  }
+  return false
+}

@@ -33,16 +33,6 @@ class CalcTest {
     }
 
     @Test
-    void subtracts() {
-        assertEquals(2, Calc.sub(5, 3));
-    }
-
-    @Test
-    void multiplies() {
-        assertEquals(12, Calc.mul(4, 3));
-    }
-
-    @Test
     void divides() {
         assertEquals(5, Calc.divide(10, 2));
     }
@@ -56,6 +46,22 @@ class CalcTest {
     void classifies() {
         assertEquals("zero", Calc.classify(0));
         assertEquals("positive", Calc.classify(5));
-        // classify(negative) intentionally untested → keeps coverage < 100%.
+        // Newly covered in this PR: the negative branch was uncovered on main,
+        // so it renders as "gained coverage" in the comparison.
+        assertEquals("negative", Calc.classify(-5));
+        // Covers the new "one" case added in this PR — "new covered".
+        assertEquals("one", Calc.classify(1));
+    }
+
+    @Test
+    void raisesToPower() {
+        assertEquals(1024, Calc.pow(2, 10));
+    }
+
+    @Test
+    void detectsZeroSentinel() {
+        // Only n == 0 is passed, so `n == 999` is never reached and the
+        // `if (n == 0 || n == 999)` line stays PARTIALLY covered.
+        assertEquals(true, Calc.isSentinel(0));
     }
 }
