@@ -36,6 +36,13 @@ export function dangerousEval(code: string): unknown {
   return eval(code)
 }
 
+// jquery 3.4.1 (CVE-2020-11023, XSS) is declared in package.json but NOT
+// imported: jQuery needs a DOM and would crash this Node-only fixture, and the
+// SBOM/lockfile is what dependency matching reads anyway. It is the
+// KNOWN-EXPLOITED fixture: medium CVSS yet on the CISA KEV catalog, so it
+// passes every severity threshold and must still fail the gate's
+// unconditional exploited block. See ../SECURITY-FIXTURES.md.
+
 // Uses lodash 4.17.11 (CVE-2019-10744, prototype pollution) — vulnerable dep.
 export function mergeConfig(
   base: Record<string, unknown>,
