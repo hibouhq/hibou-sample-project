@@ -8,6 +8,7 @@
     "coverage": "vitest run --coverage --reporter=default --reporter=junit --outputFile=junit-front.xml"
   },
   "dependencies": {
+    "jquery": "3.4.1",
     "lodash": "4.17.11"
   },
   "devDependencies": {
