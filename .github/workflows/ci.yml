@@ -128,6 +128,18 @@ jobs:
                   --output "$os-image-sbom.cdx.json" "hibou-fixture-$os"
               done
 
+          # Positive control: same Dockerfile at an OLD Tomcat (11.0.2), whose
+          # advisories DO have maven coordinates in GHSA/OSV. The default build
+          # above pins a recent 11.0.22, whose 2026 CVEs exist only as an NVD
+          # CPE binding and so match nothing by purl.
+          # Findings here + none there = the coordinate gap, not a broken match.
+          - name: Tomcat old-version control SBOM
+            run: |
+              docker build --build-arg TOMCAT_TAG=11.0.2-jre21-temurin \
+                -t hibou-fixture-tomcat-old images/tomcat
+              trivy image --format cyclonedx \
+                --output tomcat-old-image-sbom.cdx.json hibou-fixture-tomcat-old
+
       # ────────────────────────────────────────────────────────────────
       # Phase 4 — Hibou upload (SERIAL barrier: needs every artifact above).
       # Uploads coverage + JUnit + SBOM + SARIF as one snapshot for this
