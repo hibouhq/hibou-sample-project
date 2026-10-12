@@ -36,6 +36,16 @@ make clean
 Missing a toolchain locally? Each `make` target skips languages whose tools aren't
 installed (and says so), so you can iterate on one language at a time.
 
+## Java SAST POC
+
+Run `make java-sast OPENGREP=/path/to/interfile-enabled/opengrep` for source
+taint analysis and complementary SpotBugs + Find Security Bugs SARIF reports.
+See [java/SAST-POC.md](java/SAST-POC.md) for prerequisites, expected detections,
+negative controls, and the limits of this evaluation.
+
+[security-scans/README.md](security-scans/README.md) contains the executable Java,
+Python and JavaScript fixture matrix and measured scanner-version results.
+
 ## Release snapshots
 
 The CI workflow also triggers on `release: published` and uploads a Hibou snapshot for

@@ -20,6 +20,8 @@ rust/lcov.info
 *.sarif
 *.cdx.json
 sbom-*.json
+security-scans/results.json
+security-scans/__pycache__/
 
 # OS
 .DS_Store

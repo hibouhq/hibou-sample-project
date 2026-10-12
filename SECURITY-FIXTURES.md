@@ -70,6 +70,14 @@ Present in every `insecure.*` module:
 
 ## What is NOT a finding
 
+Java also contains an unused cross-file command-injection fixture:
+`CommandController.handle` reads a request parameter and passes it to
+`CommandExecutor.run`, which calls `Runtime.exec`. Never execute this fixture.
+See [java/SAST-POC.md](java/SAST-POC.md) for scanner targets and negative controls.
+
+[security-scans/README.md](security-scans/README.md) documents additional Java,
+Python and JavaScript static-analysis-only fixtures. Never execute these snippets.
+
 - The `calc` libraries are clean.
 - Coverage < 100% is intentional (untested `classify(negative)` branch + the
   `insecure` module), not a bug.

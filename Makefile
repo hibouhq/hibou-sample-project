@@ -4,9 +4,11 @@
 
 .DEFAULT_GOAL := help
 .PHONY: help test coverage ci sbom sarif clean \
-        go-test go-cov ts-test ts-cov java-test java-cov rust-test rust-cov
+	go-test go-cov ts-test ts-cov java-test java-cov java-opengrep java-spotbugs java-sast rust-test rust-cov \
+	sast-fixtures sast-fixtures-interfile sast-fixtures-test
 
 have = $(shell command -v $(1) >/dev/null 2>&1 && echo yes)
+OPENGREP ?= opengrep
 
 help: ## Show targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -46,6 +48,19 @@ java-test: ## Java tests
 java-cov: ## Java coverage (jacoco.xml)
 	@[ "$(call have,mvn)" = yes ] && (cd java && mvn -q -B verify) || echo "SKIP java: mvn not found"
 
+java-opengrep: ## Java cross-file SAST SARIF (needs interfile-enabled Opengrep)
+	@if ! command -v "$(OPENGREP)" >/dev/null 2>&1; then echo "SKIP java SAST: set OPENGREP to an interfile-enabled binary"; else \
+		"$(OPENGREP)" scan -f java/opengrep-rules.yaml --taint-interfile --dataflow-traces --sarif-output=java-opengrep.sarif java/src/main/java; \
+	fi
+
+java-spotbugs: ## Java bytecode SAST SARIF (needs Maven + JDK 17)
+	@if ! command -v mvn >/dev/null 2>&1; then echo "SKIP Java bytecode SAST: mvn not found"; else \
+		cd java && mvn -q -B -Psast compile spotbugs:spotbugs && \
+		cp target/spotbugsSarif.json ../java-spotbugs.sarif; \
+	fi
+
+java-sast: java-opengrep java-spotbugs ## Run both Java SAST POC scanners
+
 # ---- Rust ----
 rust-test: ## Rust tests
 	@[ "$(call have,cargo)" = yes ] && (cd rust && cargo test) || echo "SKIP rust: cargo not found"
@@ -56,6 +71,15 @@ rust-cov: ## Rust coverage (lcov.info)
 	else cd rust && cargo llvm-cov --lcov --output-path lcov.info; fi
 
 # ---- Security (optional tools) ----
+sast-fixtures: ## Execute multilanguage SAST fixtures (needs Python + OpenGrep)
+	@python3 security-scans/scan_harness.py --scanner "$(OPENGREP)" --report security-scans/results.json
+
+sast-fixtures-interfile: ## Execute fixtures and require cross-file engine support
+	@python3 security-scans/scan_harness.py --scanner "$(OPENGREP)" --require-interfile --report security-scans/results.json
+
+sast-fixtures-test: ## Test scanner harness without running vulnerable code
+	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s security-scans -p 'test_*.py' -v
+
 sbom: ## CycloneDX SBOMs per language (needs trivy)
 	@if [ "$(call have,trivy)" != yes ]; then echo "SKIP sbom: trivy not found"; else \
 		trivy fs --format cyclonedx --output go-sbom.cdx.json go/; \
@@ -64,7 +88,7 @@ sbom: ## CycloneDX SBOMs per language (needs trivy)
 		trivy fs --format cyclonedx --output rust-sbom.cdx.json rust/; \
 	fi
 
-sarif: ## SAST + vuln SARIF (needs gosec + trivy)
+sarif: java-opengrep ## SAST + vuln SARIF (OpenGrep optional; needs gosec + trivy)
 	@command -v gosec >/dev/null 2>&1 && (cd go && gosec -fmt sarif -out ../gosec.sarif ./... || true) || echo "SKIP gosec: not found"
 	@[ "$(call have,trivy)" = yes ] && (trivy fs --format sarif --output trivy-fs.sarif .) || echo "SKIP trivy: not found"
 

@@ -149,9 +149,10 @@ jobs:
       - name: Upload snapshot to Hibou
         if: steps.hibou.outputs.enabled == 'true'
         continue-on-error: true
-        uses: hibouhq/hibou-upload-action@v0.1
+        uses: hibouhq/hibou-upload-action@v0.2
         with:
           complete: 'true'
+          scan: 'true'      # SpotBugs reads java/target/classes from the earlier build
           server: ${{ vars.HIBOU_SERVER_URL }}
           token: ${{ secrets.HIBOU_API_TOKEN }}
           file: |

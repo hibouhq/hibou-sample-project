@@ -1,0 +1,34 @@
+rules:
+  - id: poc.java.command-flow
+    languages: [java]
+    message: Fixture input reaches command execution.
+    severity: ERROR
+    mode: taint
+    pattern-sources:
+      - pattern: System.getenv("COMMAND")
+    pattern-sanitizers:
+      - pattern: allowCommand(...)
+    pattern-sinks:
+      - pattern: Runtime.getRuntime().exec(...)
+  - id: poc.python.command-flow
+    languages: [python]
+    message: Fixture input reaches command execution.
+    severity: ERROR
+    mode: taint
+    pattern-sources:
+      - pattern: os.getenv("COMMAND")
+    pattern-sanitizers:
+      - pattern: allow_command(...)
+    pattern-sinks:
+      - pattern: subprocess.run(..., shell=True, ...)
+  - id: poc.javascript.command-flow
+    languages: [javascript]
+    message: Fixture input reaches command execution.
+    severity: ERROR
+    mode: taint
+    pattern-sources:
+      - pattern: process.env.COMMAND
+    pattern-sanitizers:
+      - pattern: allowCommand(...)
+    pattern-sinks:
+      - pattern: require("child_process").exec(...)
