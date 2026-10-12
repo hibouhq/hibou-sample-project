@@ -2,12 +2,12 @@
 version: 1
 
 # Demo thresholds: a PR shipping untested code (0% patch coverage) must block,
-# a fully tested one must pass. The insecure.* fixtures keep weakness gates
+# a fully tested one must pass. The insecure.* fixtures keep code gates
 # advisory — blocking on them would block every PR.
 quality_gates:
   - branches: ["main"]
     enforcement: blocking
-    weaknesses:
+    code:
       max_high: 20
     coverage:
       min_coverage: 20

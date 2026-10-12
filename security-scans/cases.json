@@ -1,0 +1,32 @@
+{
+  "java": {
+    "direct": "Direct.java",
+    "constant": null,
+    "sanitized": null,
+    "branch": "Branch.java",
+    "loop": "Loop.java",
+    "reassigned": null,
+    "intrafile": "Helpers.java",
+    "interfile": "Sink.java",
+    "interfile_return": "Consumer.java",
+    "interfile_inheritance": "Parent.java"
+  },
+  "python": {
+    "direct": "direct.py",
+    "constant": null,
+    "sanitized": null,
+    "branch": "branch.py",
+    "reassigned": null,
+    "intrafile": "helpers.py",
+    "interfile": "sink.py"
+  },
+  "javascript": {
+    "direct": "direct.js",
+    "constant": null,
+    "sanitized": null,
+    "branch": "branch.js",
+    "reassigned": null,
+    "intrafile": "helpers.js",
+    "interfile": "sink.js"
+  }
+}

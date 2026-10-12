@@ -1,0 +1,20 @@
+rules:
+  - id: hibou.java.command-injection
+    languages: [java]
+    message: Untrusted request input reaches command execution across Java files.
+    severity: ERROR
+    mode: taint
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      category: security
+    pattern-sources:
+      - pattern: $REQ.getParameter(...)
+    pattern-sinks:
+      - pattern: Runtime.getRuntime().exec(...)
+  - id: hibou.java.weak-hash
+    languages: [java]
+    message: MD5 is unsuitable for security-sensitive hashing.
+    severity: WARNING
+    pattern: MessageDigest.getInstance("MD5")
+    metadata:
+      cwe: "CWE-328: Use of Weak Hash"
