@@ -22,7 +22,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # ────────────────────────────────────────────────────────────────
       # Phase 1 — toolchains (SEQUENTIAL on purpose).
@@ -30,28 +30,34 @@ jobs:
       # parallel steps would race on those files. Keep every env mutation here,
       # so the parallel phases below are pure `run` steps with no env writes.
       # ────────────────────────────────────────────────────────────────
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.26'
           cache-dependency-path: go/go.sum
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
           cache-dependency-path: ts/package-lock.json
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
-      - uses: dtolnay/rust-toolchain@stable
+      # Pinned to a SHA, this action no longer reads the toolchain from its
+      # ref name: it is passed explicitly.
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
+          toolchain: stable
           components: llvm-tools-preview
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: rust
-      - uses: taiki-e/install-action@cargo-llvm-cov
-      - uses: aquasecurity/setup-trivy@v0.3.1
+      # Same: the tool to install comes from the ref name unless given.
+      - uses: taiki-e/install-action@671164c891d3e20f5b8ece04798d0154d1262d65 # cargo-llvm-cov
+        with:
+          tool: cargo-llvm-cov
+      - uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
         with:
           version: v0.72.0
 
@@ -149,7 +155,7 @@ jobs:
       - name: Upload snapshot to Hibou
         if: steps.hibou.outputs.enabled == 'true'
         continue-on-error: true
-        uses: hibouhq/hibou-upload-action@v0.1
+        uses: hibouhq/hibou-upload-action@7fcd357ea4494d8cc043c3b6b9f06a62b5f4f781 # v0.1.2
         with:
           complete: 'true'
           server: ${{ vars.HIBOU_SERVER_URL }}
@@ -166,7 +172,7 @@ jobs:
 
       - name: Upload reports artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reports
           path: |
